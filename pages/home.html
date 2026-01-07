@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Waste | Home</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+  <h1>♻ Smart Waste</h1>
+  <div class="nav-links">
+    <a href="home.html">Home</a>
+    <a href="report.html">Report</a>
+    <a href="map.html">Map</a>
+    <a href="login.html">Logout</a>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+
+  <!-- INTRO CARD -->
+  <div class="card1">
+    <h2>♻ Smart Waste Management System</h2>
+    <p>
+      A user-friendly platform to report overflowing bins, view reported
+      locations on a map, and help keep the city clean.
+    </p>
+
+    <div class="features">
+      <div class="feature">📸 Report Waste</div>
+      <div class="feature">🗺 View Map</div>
+      <div class="feature">🌱 Clean City</div>
+    </div>
+  </div>
+
+  <!-- COMPLAINTS -->
+  <div class="card1">
+    <h2>🧾 My Complaints</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Location</th>
+          <th>Description</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="myComplaints">
+        <!-- Filled by user.js -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <div class="card1">
+    <h2>🔔 Notifications</h2>
+    <ul id="notificationList"></ul>
+  </div>
+
+</div>
+
+<!-- AUTH CHECK -->
+<script type="module">
+  import { getAuth, onAuthStateChanged } 
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  import { app } from "../js/firebase.js";
+  import {
+    loadMyComplaints,
+    loadNotifications
+  } from "../js/user.js";
+
+  const auth = getAuth(app);
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "login.html";
+    } else {
+      loadMyComplaints();
+      loadNotifications();
+    }
+  });
+</script>
+
+</body>
+</html>

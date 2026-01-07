@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Report Bin</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+  <h1>♻ Smart Waste</h1>
+  <div>
+    <a href="home.html">Home</a>
+    <a href="map.html">Map</a>
+    <a href="login.html">Logout</a>
+  </div>
+</div>
+
+<!-- REPORT CARD -->
+<div class="report-card">
+
+  <h2>📸 Report Overflowing Bin</h2>
+  <p class="subtitle">Help keep the city clean by reporting waste issues</p>
+
+  <div class="form-group">
+    <label>📍 Waste Location</label>
+    <input type="text" id="location" placeholder="Enter waste location">
+  </div>
+
+  <div class="form-group">
+    <label>📝 Description</label>
+    <textarea id="description" placeholder="Describe the issue"></textarea>
+  </div>
+
+  <div class="form-group">
+    <label>🖼 Upload Image</label>
+    <input type="file" id="image" accept="image/*">
+  </div>
+
+  <button id="submitBtn">🚀 Submit Complaint</button>
+
+</div>
+
+<!-- FIREBASE SCRIPT -->
+<script type="module">
+  import { collection, addDoc } 
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  import { db } from "../js/firebase.js";
+
+  document.getElementById("submitBtn").onclick = async () => {
+    const location = document.getElementById("location").value;
+    const description = document.getElementById("description").value;
+    const image = document.getElementById("image").files[0];
+
+    if (!location || !description) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    await addDoc(collection(db, "reports"), {
+      location: location,
+      description: description,
+      imageName: image ? image.name : "No image",
+      status: "Pending",
+      timestamp: new Date()
+    });
+
+    alert("✅ Report Submitted Successfully");
+    
+    document.getElementById("location").value = "";
+    document.getElementById("description").value = "";
+    document.getElementById("image").value = "";
+  };
+</script>
+
+</body>
+</html>

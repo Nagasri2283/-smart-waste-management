@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="../../css/admin.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+  <h1>Smart Waste – Admin</h1>
+  <button onclick="logout()">Logout</button>
+</div>
+<span id="totalComplaints"></span>
+<span id="pendingCount"></span>
+<span id="completedCount"></span>
+
+<table>
+  <tbody id="complaintsTable"></tbody>
+</table>
+
+
+
+<!-- SUMMARY CARDS -->
+<div class="cards">
+
+  <div class="dash-card">
+    <h3>📦 Total Complaints</h3>
+    <p id="totalComplaints">0</p>
+  </div>
+
+  <div class="dash-card">
+    <h3>⏳ Pending</h3>
+    <p id="pendingCount">0</p>
+  </div>
+
+  <div class="dash-card">
+    <h3>✅ Completed</h3>
+    <p id="completedCount">0</p>
+  </div>
+
+</div>
+
+<!-- COMPLAINT TABLE -->
+<div class="card1">
+  <h2>📋 All Complaints</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Location</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Update</th>
+      </tr>
+    </thead>
+    <tbody id="complaintsTable"></tbody>
+  </table>
+</div>
+
+<!-- NOTIFICATIONS -->
+ <ul id="adminNotifications"></ul>
+<div class="card1">
+  <h2>🔔 System Notifications</h2>
+  <ul id="adminNotifications"></ul>
+</div>
+
+<script type="module" src="../../js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Manage Complaints</title>
+  <link rel="stylesheet" href="../../css/admin.css">
+</head>
+<body>
+
+<div class="navbar">
+  <h2>Complaints Management</h2>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<div class="content">
+  <h3>All Waste Complaints</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Location</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Update</th>
+      </tr>
+    </thead>
+    <tbody id="complaintsTable"></tbody>
+  </table>
+</div>
+
+<script src="../../js/firebase.js"></script>
+<script src="../../js/admin.js"></script>
+<script>
+  loadComplaints();
+</script>
+
+</body>
+</html>
