@@ -2,48 +2,46 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Smart Waste Management</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Login | Smart Waste Management</title>
+  <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
+<header class="header">
+  <h1>♻️ Smart Waste Management</h1>
+</header>
 
-  <!-- Header -->
-  <header class="header">
-    <h1>♻️ Smart Waste Management</h1>
-  </header>
+<section class="login-container">
 
-  <!-- Login Section -->
-  <section class="login-container">
+  <!-- User Login -->
+  <div class="card user-card">
+    <h2>👤 User Login</h2>
 
-    <!-- User Login -->
-    <div class="card user-card">
-      <h2>👤 User Login</h2>
+    <input type="email" id="userEmail" placeholder="User Email">
+    <input type="password" id="userPassword" placeholder="Password">
 
-      <input type="email" placeholder="User Email">
-      <input type="password" placeholder="Password">
+    <button class="btn user-btn" onclick="loginUser()">Login</button>
 
-      <button class="btn user-btn">Login</button>
+    <p class="link-text">
+      New User? <a href="register.html">Register</a>
+    </p>
+  </div>
 
-      <p class="link-text">
-        New User? <a href="#">Register</a>
-      </p>
-    </div>
+  <!-- Admin Login -->
+  <div class="card admin-card">
+    <h2>👑 Admin Login</h2>
 
-    <!-- Admin Login -->
-    <div class="card admin-card">
-      <h2>👑 Admin Login</h2>
+    <input type="email" id="adminEmail" placeholder="Admin Email">
+    <input type="password" id="adminPassword" placeholder="Password">
 
-      <input type="email" placeholder="Admin Email">
-      <input type="password" placeholder="Password">
+    <button class="btn admin-btn" onclick="loginAdmin()">Login</button>
 
-      <button class="btn admin-btn">Login</button>
+    <p class="link-text">
+      New Admin? <a href="admin/admin-register.html">Register</a>
+    </p>
+  </div>
 
-      <p class="link-text">
-        New Admin? <a href="#">Register</a>
-      </p>
-    </div>
+</section>
 
-  </section>
-
+<script type="module" src="../js/common-login.js"></script>
 </body>
 </html>
