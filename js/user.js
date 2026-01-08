@@ -1,146 +1,157 @@
+// user.js
+// Firebase v10 (modular)
+
+import { getAuth, onAuthStateChanged, signOut } 
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  where,
+  orderBy,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import { app } from "./firebase.js";
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+
 /* ===============================
-   FIREBASE AUTH STATE CHECK
+   SUBMIT COMPLAINT
 ================================ */
-firebase.auth().onAuthStateChanged(user => {
-  if (!user && !location.pathname.includes("login") && !location.pathname.includes("register")) {
-    window.location.href = "login.html";
+export async function submitComplaint(location, description, imageName = "No image") {
+  const user = auth.currentUser;
+  if (!user) {
+    alert("Login required");
+    return;
   }
-});
 
-/* ===============================
-   USER REGISTER
-================================ */
-function registerUser() {
-  const name = document.getElementById("name").value;
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  firebase.auth().createUserWithEmailAndPassword(email, password)
-    .then((userCredential) => {
-      const uid = userCredential.user.uid;
-
-      return firebase.firestore().collection("users").doc(uid).set({
-        name: name,
-        email: email,
-        role: "USER",
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    })
-    .then(() => {
-      alert("Registration successful");
-      window.location.href = "login.html";
-    })
-    .catch(error => alert(error.message));
-}
-
-/* ===============================
-   USER LOGIN
-================================ */
-function loginUser() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  firebase.auth().signInWithEmailAndPassword(email, password)
-    .then((userCredential) => {
-      const uid = userCredential.user.uid;
-
-      firebase.firestore().collection("users").doc(uid).get()
-        .then(doc => {
-          if (doc.exists && doc.data().role === "USER") {
-            window.location.href = "home.html";
-          } else {
-            alert("Not a user account");
-            firebase.auth().signOut();
-          }
-        });
-    })
-    .catch(error => alert(error.message));
-}
-
-/* ===============================
-   REPORT COMPLAINT
-================================ */
-function submitComplaint() {
-  const location = document.getElementById("location").value;
-  const description = document.getElementById("description").value;
-  const user = firebase.auth().currentUser;
-
-  if (!user) return alert("Login required");
-
-  firebase.firestore().collection("complaints").add({
+  await addDoc(collection(db, "reports"), {
     userId: user.uid,
-    location: location,
-    description: description,
-    status: "Pending",
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    alert("Complaint submitted");
-    document.getElementById("location").value = "";
-    document.getElementById("description").value = "";
+    location,
+    description,
+    imageName: image ? imageName : "No image",
+    status: "Reported",
+    timestamp: new Date()
+  });
+
+  alert("✅ Complaint submitted");
+}
+
+/* ===============================
+   LOAD MY COMPLAINTS (LIVE)
+================================ */
+export function loadMyComplaints() {
+  const tableBody = document.getElementById("myComplaints");
+  if (!tableBody) return;
+
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const q = query(
+    collection(db, "reports"),
+    where("userId", "==", user.uid),
+    orderBy("timestamp", "desc")
+  );
+
+  onSnapshot(q, (snapshot) => {
+    tableBody.innerHTML = "";
+
+    if (snapshot.empty) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="3" style="text-align:center;">
+            No complaints reported yet
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    snapshot.forEach((doc) => {
+      const c = doc.data();
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+  <td>${c.location}</td>
+  <td>${c.description}</td>
+
+  <td class="status-cell">
+    <span class="status ${c.status.toLowerCase().replace(" ", "-")}">
+      ${c.status}
+    </span>
+  </td>
+
+  <td>
+    <button onclick="updateStatus('${doc.id}', 'In Progress')">
+      In Progress
+    </button>
+    <button onclick="updateStatus('${doc.id}', 'Cleaned')">
+      Cleaned
+    </button>
+  </td>
+`;
+
+
+      tableBody.appendChild(row);
+    });
   });
 }
 
-/* ===============================
-   LOAD USER COMPLAINTS
-================================ */
-export function loadMyComplaints() {
-  const user = firebase.auth().currentUser;
-  const table = document.getElementById("myComplaints");
-
-  if (!user || !table) return;
-
-  table.innerHTML = "";
-
-  firebase.firestore().collection("complaints")
-    .where("userId", "==", user.uid)
-    .orderBy("createdAt", "desc")
-    .get()
-    .then(snapshot => {
-      snapshot.forEach(doc => {
-        const c = doc.data();
-        table.innerHTML += `
-          <tr>
-            <td>${c.location}</td>
-            <td>${c.description}</td>
-            <td>${c.status}</td>
-          </tr>
-        `;
-      });
-    });
-}
 
 /* ===============================
-   LOAD USER NOTIFICATIONS
+   LOAD NOTIFICATIONS (LIVE)
 ================================ */
 export function loadNotifications() {
-  const user = firebase.auth().currentUser;
   const list = document.getElementById("notificationList");
+  if (!list) return;
 
-  if (!user || !list) return;
+  onAuthStateChanged(auth, user => {
+    if (!user) return;
 
-  list.innerHTML = "";
+    const q = query(
+      collection(db, "notifications"),
+      where("userId", "==", user.uid),
+      orderBy("timestamp", "desc") // Requires composite index
+    );
 
-  firebase.firestore().collection("notifications")
-    .where("userId", "==", user.uid)
-    .orderBy("createdAt", "desc")
-    .get()
-    .then(snapshot => {
+    onSnapshot(q, snapshot => {
+      list.innerHTML = "";
       snapshot.forEach(doc => {
         const n = doc.data();
-        list.innerHTML += `<li>${n.message}</li>`;
+        const li = document.createElement("li");
+        li.textContent = n.message;
+        list.appendChild(li);
       });
+    }, error => {
+      console.error("Error loading notifications:", error);
+      if (error.code === "failed-precondition") {
+        alert("Firestore index missing for notifications! Check the console link.");
+      }
     });
+  });
 }
+import { doc, updateDoc } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+window.updateStatus = async (docId, newStatus) => {
+  try {
+    await updateDoc(doc(db, "reports", docId), {
+      status: newStatus
+    });
+    alert("Status updated to " + newStatus);
+  } catch (error) {
+    alert("Error updating status: " + error.message);
+  }
+};
 /* ===============================
    LOGOUT
 ================================ */
-function logout() {
-  firebase.auth().signOut().then(() => {
+export function logout() {
+  signOut(auth).then(() => {
     window.location.href = "login.html";
   });
 }
-export function submitComplaint() { }
-export function loginUser() { }
-export function registerUser() { }
-export function logout() { }

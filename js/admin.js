@@ -1,8 +1,7 @@
 import { auth, db } from "./firebase.js";
-
 import {
   collection,
-  getDocs,
+  onSnapshot,
   updateDoc,
   doc,
   addDoc
@@ -13,68 +12,109 @@ import {
   signOut
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* ===== AUTH CHECK ===== */
+/* ===============================
+   AUTH CHECK
+================================ */
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     window.location.href = "admin-login.html";
+    return;
   }
+  loadComplaints();
+  loadNotifications();
 });
 
-/* ===== LOAD COMPLAINTS ===== */
-async function loadComplaints() {
+/* ===============================
+   LOAD COMPLAINTS (ADMIN)
+================================ */
+function loadComplaints() {
   const table = document.getElementById("complaintsTable");
   if (!table) return;
 
-  table.innerHTML = "";
+  const totalEl = document.getElementById("totalComplaints");
+  const pendingEl = document.getElementById("pendingCount");
+  const completedEl = document.getElementById("completedCount");
 
-  const snapshot = await getDocs(collection(db, "complaints"));
-  snapshot.forEach((docSnap) => {
-    const c = docSnap.data();
+  onSnapshot(collection(db, "reports"), (snapshot) => {
+    table.innerHTML = "";
 
-    table.innerHTML += `
-      <tr>
-        <td>${c.location}</td>
-        <td>${c.description}</td>
-        <td>${c.status}</td>
-        <td>
-          <select onchange="updateStatus('${docSnap.id}', this.value)">
-            <option ${c.status==="Pending"?"selected":""}>Pending</option>
-            <option ${c.status==="In Progress"?"selected":""}>In Progress</option>
-            <option ${c.status==="Completed"?"selected":""}>Completed</option>
-          </select>
-        </td>
-      </tr>
-    `;
+    let total = 0;
+    let pending = 0;
+    let completed = 0;
+
+    snapshot.forEach((docSnap) => {
+      const c = docSnap.data();
+      total++;
+
+      if (c.status === "Reported" || c.status === "In Progress") {
+        pending++;
+      }
+
+      if (c.status === "Cleaned") {
+        completed++;
+      }
+
+      table.innerHTML += `
+        <tr>
+          <td>${c.location}</td>
+          <td>${c.description}</td>
+          <td>${c.status}</td>
+          <td>
+            <select onchange="updateStatus('${docSnap.id}', this.value, '${c.userId}')">
+              <option value="Reported" ${c.status === "Reported" ? "selected" : ""}>Reported</option>
+              <option value="In Progress" ${c.status === "In Progress" ? "selected" : ""}>In Progress</option>
+              <option value="Cleaned" ${c.status === "Cleaned" ? "selected" : ""}>Cleaned</option>
+            </select>
+          </td>
+        </tr>
+      `;
+    });
+
+    // 🔢 UPDATE DASHBOARD CARDS
+    totalEl.textContent = total;
+    pendingEl.textContent = pending;
+    completedEl.textContent = completed;
   });
 }
-loadComplaints();
 
-/* ===== UPDATE STATUS ===== */
-window.updateStatus = async (id, status) => {
-  await updateDoc(doc(db, "complaints", id), { status });
 
-  await addDoc(collection(db, "notifications"), {
-    message: `Complaint updated to ${status}`,
-    createdAt: new Date()
-  });
+/* ===============================
+   UPDATE STATUS + NOTIFY USER
+================================ */
+window.updateStatus = async (id, status, userId) => {
+  try {
+    await updateDoc(doc(db, "reports", id), { status });
 
-  alert("Status updated");
+    await addDoc(collection(db, "notifications"), {
+      userId,
+      message: `Your complaint status updated to "${status}"`,
+      timestamp: new Date()
+    });
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to update status");
+  }
 };
 
-/* ===== LOAD NOTIFICATIONS ===== */
-async function loadNotifications() {
+/* ===============================
+   ADMIN NOTIFICATIONS
+================================ */
+function loadNotifications() {
   const list = document.getElementById("adminNotifications");
   if (!list) return;
 
-  list.innerHTML = "";
-  const snapshot = await getDocs(collection(db, "notifications"));
-  snapshot.forEach(doc => {
-    list.innerHTML += `<li>${doc.data().message}</li>`;
+  onSnapshot(collection(db, "notifications"), (snapshot) => {
+    list.innerHTML = "";
+    snapshot.forEach((docSnap) => {
+      list.innerHTML += `<li>${docSnap.data().message}</li>`;
+    });
   });
 }
-loadNotifications();
 
-/* ===== LOGOUT ===== */
+/* ===============================
+   LOGOUT
+================================ */
 window.logout = () => {
   signOut(auth).then(() => {
     window.location.href = "admin-login.html";

@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Report Bin</title>
+  <meta charset="UTF-8">
+  <title>Report Bin | Smart Waste</title>
   <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
@@ -9,7 +10,7 @@
 <!-- NAVBAR -->
 <div class="navbar">
   <h1>♻ Smart Waste</h1>
-  <div>
+  <div class="nav-links">
     <a href="home.html">Home</a>
     <a href="map.html">Map</a>
     <a href="login.html">Logout</a>
@@ -35,42 +36,65 @@
   <div class="form-group">
     <label>🖼 Upload Image</label>
     <input type="file" id="image" accept="image/*">
+    <img id="preview" style="display:none; width:100%; margin-top:12px; border-radius:12px;">
   </div>
 
   <button id="submitBtn">🚀 Submit Complaint</button>
 
 </div>
-
-<!-- FIREBASE SCRIPT -->
+<!-- FIREBASE + LOGIC -->
 <script type="module">
+  import { getAuth, onAuthStateChanged } 
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
   import { collection, addDoc } 
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
   import { db } from "../js/firebase.js";
 
+  /* AUTH PROTECTION */
+  const auth = getAuth();
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "login.html";
+    }
+  });
+
+  /* IMAGE PREVIEW */
+  document.getElementById("image").addEventListener("change", (e) => {
+    const preview = document.getElementById("preview");
+    preview.src = URL.createObjectURL(e.target.files[0]);
+    preview.style.display = "block";
+  });
+
+  /* SUBMIT COMPLAINT */
   document.getElementById("submitBtn").onclick = async () => {
-    const location = document.getElementById("location").value;
-    const description = document.getElementById("description").value;
+    const location = document.getElementById("location").value.trim();
+    const description = document.getElementById("description").value.trim();
     const image = document.getElementById("image").files[0];
 
     if (!location || !description) {
       alert("Please fill all fields");
       return;
     }
-
+ const imageName = imageFile ? imageFile.name : "No image";
     await addDoc(collection(db, "reports"), {
-      location: location,
-      description: description,
-      imageName: image ? image.name : "No image",
-      status: "Pending",
-      timestamp: new Date()
-    });
+  location: location,
+  description: description,
+  imageName: image ? imageName : "No image",
+  status: "Reported",
+  userId: auth.currentUser.uid,   // 🔑 KEY PART
+  timestamp: new Date()
+});
+
 
     alert("✅ Report Submitted Successfully");
-    
+
+    // Reset form
     document.getElementById("location").value = "";
     document.getElementById("description").value = "";
     document.getElementById("image").value = "";
+    document.getElementById("preview").style.display = "none";
   };
 </script>
 

@@ -30,11 +30,12 @@
     </p>
 
     <div class="features">
-      <div class="feature">📸 Report Waste</div>
-      <div class="feature">🗺 View Map</div>
-      <div class="feature">🌱 Clean City</div>
+      <button class="feature-btn" onclick="goToReport()">📸 Report Waste</button>
+  <button class="feature-btn" onclick="goToMap()">🗺 View Map</button>
+  <button class="feature-btn" onclick="goToCleanCity()">🌱 Clean City</button>
     </div>
   </div>
+
 
   <!-- COMPLAINTS -->
   <div class="card1">
@@ -46,6 +47,7 @@
           <th>Location</th>
           <th>Description</th>
           <th>Status</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody id="myComplaints">
@@ -61,7 +63,19 @@
   </div>
 
 </div>
+<script>
+  function goToReport() {
+    window.location.href = "report.html";
+  }
 
+  function goToMap() {
+    window.location.href = "map.html";
+  }
+
+  function goToCleanCity() {
+    window.location.href = "clean-city.html";
+  }
+</script>
 <!-- AUTH CHECK -->
 <script type="module">
   import { getAuth, onAuthStateChanged } 
@@ -70,20 +84,29 @@
   import { app } from "../js/firebase.js";
   import {
     loadMyComplaints,
-    loadNotifications
+    loadNotifications,
+    logout
   } from "../js/user.js";
 
   const auth = getAuth(app);
 
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, user => {
     if (!user) {
-      window.location.href = "login.html";
+        window.location.href = "login.html";
     } else {
-      loadMyComplaints();
-      loadNotifications();
-    }
-  });
-</script>
+        loadMyComplaints();
+        loadNotifications();
 
+        // Add logout event listener here
+        const logoutBtn = document.getElementById("logoutBtn");
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", () => {
+                logout();
+            });
+        }
+    }
+});
+
+</script>
 </body>
 </html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Clean City Dashboard</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+  <h1>♻ Smart Waste</h1>
+  <div class="nav-links">
+    <a href="home.html">Home</a>
+    <a href="report.html">Report</a>
+    <a href="map.html">Map</a>
+    <a href="login.html">Logout</a>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="container">
+
+  <div class="card1">
+    <h2>🌱 Clean City Dashboard</h2>
+    <p>Track cleanliness progress and waste management status</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card">
+      <h3>Total Reports</h3>
+      <p id="totalReports">0</p>
+    </div>
+
+    <div class="stat-card green">
+      <h3>Cleaned</h3>
+      <p id="cleanedReports">0</p>
+    </div>
+
+    <div class="stat-card orange">
+      <h3>Pending</h3>
+      <p id="pendingReports">0</p>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="card1">
+    <h3>♻ City Cleanliness Progress</h3>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill">0%</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Dummy data (later replace with Firebase)
+  const total = 20;
+  const cleaned = 12;
+  const pending = total - cleaned;
+
+  document.getElementById("totalReports").innerText = total;
+  document.getElementById("cleanedReports").innerText = cleaned;
+  document.getElementById("pendingReports").innerText = pending;
+
+  const percent = Math.round((cleaned / total) * 100);
+  const fill = document.getElementById("progressFill");
+  fill.style.width = percent + "%";
+  fill.innerText = percent + "% Clean";
+</script>
+
+</body>
+</html>
